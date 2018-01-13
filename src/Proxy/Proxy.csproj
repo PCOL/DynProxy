@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
+    <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
+    <Content Include="IProxiedObject.cs" />
+    <Content Include="Proxy.cs" />
+    <Content Include="IProxy.cs" />
+    <Content Include="IProxyMetadata.cs" />
+    <Content Include="IProxyTypeGenerator.cs" />
+    <Content Include="ProxyMetadata.cs" />
+    <Content Include="ProxyTypeGenerator.cs" />
+    <Content Include="Reflection\ReflectionExtensions.cs" />
+    <Content Include="Reflection\Emit\ArrayBuilder.cs" />
+    <Content Include="Reflection\Emit\AssemblyBuilderCache.cs" />
+    <Content Include="Reflection\Emit\ReflectionEmitExtensions.cs" />
+    <Content Include="Reflection\Emit\ReflectionEmitPropertyExtensions.cs" />
+    <Content Include="Reflection\Emit\TypeFactoryContext.cs" />
+    <Content Include="Reflection\Emit\TypeFactoryExtension.cs" />
+    <Content Include="Reflection\Emit\TypeFactory.cs" />
+    <Content Include="Reflection\Emit\AssemblyCache.cs" />
+    <Content Include="Utility.cs" />
+  </ItemGroup>
+</Project>
