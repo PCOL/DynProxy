@@ -342,6 +342,27 @@ namespace Proxy
                 methodIL.Emit(OpCodes.Pop);
             }
 
+            var parms = methodInfo.GetParameters();
+            if (parms.Any() == true)
+            {
+                int index = 0;
+                foreach (var parm in parms)
+                {
+                    if (parm.IsOut == true)
+                    {
+
+                        methodIL.Emit(OpCodes.Ldarg, parm.Position + 1);
+                        methodIL.Emit(OpCodes.Ldloc, localArguments);
+                        methodIL.Emit(OpCodes.Ldc_I4, index);
+                        methodIL.Emit(OpCodes.Ldelem_Ref);
+                        methodIL.Emit(OpCodes.Stind_Ref);
+                        methodIL.Emit(OpCodes.Nop);
+                    }
+
+                    index++;
+                }
+            }
+
             methodIL.Emit(OpCodes.Ret);
         }
 

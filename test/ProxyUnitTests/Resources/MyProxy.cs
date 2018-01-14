@@ -7,21 +7,54 @@ namespace ProxyUnitTests.Resources
     public class MyProxy
         : Proxy<IMyProxy>
     {
+        private string stringProperty;
+
+        private bool? booleanProperty;
+
         protected override object Invoke(MethodInfo methodInfo, object[] arguments)
         {
-Console.WriteLine("Calling method: {0}", methodInfo.Name);
-Console.WriteLine("Args count: {0}", arguments.Length);
-Console.WriteLine("Arg_0: {0}", arguments[0]);
-Console.WriteLine("Arg_1: {0}", arguments[1]);
+            if (methodInfo.Name == "get_StringProperty")
+            {
+                return this.stringProperty;
+            }
+            else if (methodInfo.Name == "set_StringProperty")
+            {
+                this.stringProperty = (string)arguments[0];
+                return null;
+            }
+            else if (methodInfo.Name == "get_BooleanProperty")
+            {
+                return this.stringProperty;
+            }
+            else if (methodInfo.Name == "set_BooleanProperty")
+            {
+                this.booleanProperty = (bool?)arguments[0];
+                return null;
+            }
+            else if (methodInfo.Name == "TryGetStringProperty")
+            {
+                if (this.stringProperty != null)
+                {
+                    arguments[0] = this.stringProperty;
+                    return true;
+                }
 
-            if (methodInfo.Name == "Add" &&
+                return false;
+            }
+            else if (methodInfo.Name == "TryGetBooleanProperty")
+            {
+                if (this.booleanProperty.HasValue == true)
+                {
+                    arguments[0] = this.booleanProperty;
+                    return true;
+                }
+
+                return false;
+            }
+            else if (methodInfo.Name == "Add" &&
                 methodInfo.ReturnType == typeof(int))
             {
-                var returnValue = ProxyAdd((int)arguments[0], (int)arguments[1]);
-
-Console.WriteLine("Return Value: {0}", returnValue);
-
-                return returnValue;
+                return ProxyAdd((int)arguments[0], (int)arguments[1]);
             }
 
             throw new NotSupportedException();
