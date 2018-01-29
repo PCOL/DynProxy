@@ -1,4 +1,4 @@
-namespace ProxyUnitTests.Resources
+namespace ProxyBenchmarks.Resources
 {
     public interface IMyProxy
     {
@@ -12,5 +12,7 @@ namespace ProxyUnitTests.Resources
         bool TryGetStringProperty(out string value);
 
         bool TryGetBooleanProperty(out bool value);
+
+        void EmptyMethod();
     }
 }

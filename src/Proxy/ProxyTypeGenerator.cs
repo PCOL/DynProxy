@@ -31,8 +31,7 @@ namespace Proxy
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
-    using global::Proxy.Reflection;
-    using global::Proxy.Reflection.Emit;
+    using FluentIL;
 
     /// <summary>
     /// A factory for building proxy types.
@@ -59,41 +58,27 @@ namespace Proxy
         }
 
         /// <summary>
-        /// Gets or creates the <see cref="Type"/> that represents the proxy type.
-        /// </summary>
-        /// <typeparam name="T">The type of proxy required.</typeparam>
-        /// <param name="baseType">The base <see cref="Type"/> to proxy.</param>
-        /// <param name="scope">The current dependency injection scope.</param>
-        /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
-        public Type GetOrCreateProxyType<T>(Type baseType, IServiceProvider scope = null)
-        {
-            Type proxyType = TypeFactory
-                .Default
-                .GetType(
-                    TypeName(typeof(T), baseType),
-                    true);
-
-            if (proxyType == null)
-            {
-                proxyType = this.GenerateProxyType(typeof(T), baseType, scope);
-            }
-
-            return proxyType;
-        }
-
-        /// <summary>
         /// Generate the proxy instance.
         /// </summary>
         /// <typeparam name="T">The type of proxy to create.</typeparam>
         /// <param name="implementation">The proxy implementation.</param>
-        /// <param name="serviceProvider">An <see cref="IServiceProvider"/>.</param>
         /// <returns>An instance of the proxy type.</returns>
-        public T CreateProxy<T>(IProxy implementation, IServiceProvider serviceProvider = null)
+        public T CreateProxy<T>(IProxy implementation)
         {
             Utility.ThrowIfArgumentNull(implementation, nameof(implementation));
 
-            Type proxyType = this.GetOrCreateProxyType<T>(typeof(IProxy));
-            return (T)Activator.CreateInstance(proxyType, implementation, serviceProvider);
+            Type proxyType = TypeFactory
+                .Default
+                .GetType(
+                    TypeName(typeof(T), typeof(IProxy)),
+                    true);
+
+            if (proxyType == null)
+            {
+                proxyType = this.GenerateProxyType(typeof(T), typeof(IProxy));
+            }
+
+            return (T)Activator.CreateInstance(proxyType, implementation);
         }
 
         /// <summary>
@@ -101,68 +86,51 @@ namespace Proxy
         /// </summary>
         /// <param name="proxyType">The interface the proxy type must implement.</param>
         /// <param name="proxiedType">The type being proxied.</param>
-        /// <param name="serviceProvider">The dependency injection scope.</param>
         /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
         private Type GenerateProxyType(
             Type proxyType,
-            Type proxiedType,
-            IServiceProvider serviceProvider)
+            Type proxiedType)
         {
             if (proxyType.IsInterface == false)
             {
                 throw new ArgumentException("Argument is not an interface", "proxyType");
             }
 
-            TypeBuilder typeBuilder = TypeFactory
+            var typeBuilder = TypeFactory
                 .Default
-                .ModuleBuilder
-                .DefineType(
-                    TypeName(proxyType, proxiedType),
-                    TypeAttributes.Class | TypeAttributes.Public);
+                .NewType(TypeName(proxyType, proxiedType))
+                    .Public()
+                    .Implements(proxyType)
+                    .Implements(typeof(IProxiedObject));
 
-            typeBuilder.AddInterfaceImplementation(proxyType);
+            var targetField = typeBuilder
+                .NewField("target", proxiedType)
+                .Private();
 
-            FieldBuilder targetField = typeBuilder
-                .DefineField(
-                    "target",
-                    proxiedType,
-                    FieldAttributes.Private);
-
-            FieldBuilder dependencyResolverField = typeBuilder
-                .DefineField(
-                    "serviceProvider",
-                    typeof(IServiceProvider),
-                    FieldAttributes.Private);
-
-            TypeFactoryContext context = new TypeFactoryContext(
+            var context = new ProxyBuilderContext(
                 typeBuilder,
                 proxyType,
                 proxiedType,
-                serviceProvider,
-                targetField,
-                dependencyResolverField);
+                targetField);
 
             this.ImplementInterface(context);
 
             this.EmitConstructor(context);
 
-            this.EmitIProxyMetadataInterface(context);
-
             this.EmitIProxiedObjectInterface(context);
 
             return context
                 .TypeBuilder
-                .CreateTypeInfo()
-                .AsType();
+                .CreateType();
         }
 
         /// <summary>
         /// Implements the interface for the proxy type.
         /// </summary>
-        /// <param name="context">The current factory context.</param>
-        private void ImplementInterface(TypeFactoryContext context)
+        /// <param name="context">The current builder context.</param>
+        private void ImplementInterface(ProxyBuilderContext context)
         {
-            Dictionary<string, MethodBuilder> propertyMethods = new Dictionary<string, MethodBuilder>();
+            var propertyMethods = new Dictionary<string, IMethodBuilder>();
 
             foreach (var memberInfo in context.NewType.GetMembers())
             {
@@ -175,26 +143,24 @@ namespace Proxy
                         .ToArray();
 
                     Type[] genericArguments = null;
-                    MethodBuilder methodBuilder = context
+                    var methodBuilder = context
                         .TypeBuilder
-                        .DefineMethod(
-                            methodInfo.Name,
-                            MethodAttributes.Public | MethodAttributes.Virtual,
-                            methodInfo.ReturnType,
-                            methodArgs);
+                        .NewMethod(methodInfo.Name)
+                            .MethodAttributes(MethodAttributes.Public | MethodAttributes.Virtual)
+                            .Params(methodArgs)
+                            .Returns(methodInfo.ReturnType);
 
                     if (methodInfo.ContainsGenericParameters == true)
                     {
                         genericArguments = methodInfo.GetGenericArguments();
-                        GenericTypeParameterBuilder[] genericTypeParameterBuilder = methodBuilder
-                            .DefineGenericParameters(genericArguments.Select(t => t.Name).ToArray());
-                        for (int m = 0; m < genericTypeParameterBuilder.Length; m++)
+                        foreach (var arg in genericArguments)
                         {
-                            genericTypeParameterBuilder[m].SetGenericParameterAttributes(genericArguments[m].GenericParameterAttributes);
+                            methodBuilder.NewGenericParameter(arg.Name)
+                                .Attributes = arg.GenericParameterAttributes;
                         }
                     }
 
-                    ILGenerator methodIL = methodBuilder.GetILGenerator();
+                    var methodIL = methodBuilder.Body();
 
                     this.EmitCallToProxyImplementation(context, methodIL, methodInfo, methodArgs);
 
@@ -205,24 +171,23 @@ namespace Proxy
                 }
                 else if (memberInfo.MemberType == MemberTypes.Property)
                 {
-                    PropertyBuilder propertyBuilder = context
+                    var propertyBuilder = context
                         .TypeBuilder
-                        .DefineProperty(
-                            memberInfo.Name,
-                            PropertyAttributes.SpecialName,
-                            ((PropertyInfo)memberInfo).PropertyType,
-                            null);
+                        .NewProperty(memberInfo.Name, ((PropertyInfo)memberInfo).PropertyType)
+                        .Attributes(PropertyAttributes.SpecialName);
 
-                    MethodBuilder getMethod;
-                    if (propertyMethods.TryGetValue(memberInfo.PropertyGetName(), out getMethod) == true)
+                    if (propertyMethods.TryGetValue(
+                        memberInfo.PropertyGetName(),
+                        out IMethodBuilder getMethod) == true)
                     {
-                        propertyBuilder.SetGetMethod(getMethod);
+                        propertyBuilder.GetMethod = getMethod;
                     }
 
-                    MethodBuilder setMethod;
-                    if (propertyMethods.TryGetValue(memberInfo.PropertySetName(), out setMethod) == true)
+                    if (propertyMethods.TryGetValue(
+                        memberInfo.PropertySetName(),
+                        out IMethodBuilder setMethod) == true)
                     {
-                        propertyBuilder.SetSetMethod(setMethod);
+                        propertyBuilder.SetMethod = setMethod;
                     }
                 }
             }
@@ -231,115 +196,112 @@ namespace Proxy
         /// <summary>
         /// Adds a constructor to the proxy type.
         /// </summary>
-        /// <param name="context">The current factory context.</param>
-        private void EmitConstructor(TypeFactoryContext context)
+        /// <param name="context">The current builder context.</param>
+        private void EmitConstructor(ProxyBuilderContext context)
         {
             // Build Constructor.
-            ConstructorBuilder constructorBuilder = context.TypeBuilder.DefineConstructor(
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                CallingConventions.HasThis,
-                new Type[]
-                {
-                    context.BaseType,
-                    typeof(IServiceProvider)
-                });
-
-            constructorBuilder.DefineParameter(1, ParameterAttributes.None, "target");
-            constructorBuilder.DefineParameter(2, ParameterAttributes.None, "serviceProvider");
-
-            ILGenerator il = constructorBuilder.GetILGenerator();
-
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Stfld, context.BaseObjectField);
-
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_2);
-            il.Emit(OpCodes.Stfld, context.ServiceProviderField);
-
-            il.Emit(OpCodes.Ret);
+            var constructorBuilder = context
+                .TypeBuilder
+                .NewConstructor()
+                .Public()
+                .HideBySig()
+                .SpecialName()
+                .RTSpecialName()
+                .Param(context.BaseType, "target")
+                .Body()
+                    .LdArg0()
+                    .LdArg1()
+                    .StFld(context.BaseObjectField)
+                    .Ret();
         }
 
         /// <summary>
         /// Emits the IL to call a proxy method implementation.
         /// </summary>
-        /// <param name="context">The type factory context.</param>
+        /// <param name="context">The proxy builder context.</param>
         /// <param name="methodIL">The methods <see cref="ILGenerator"/>.</param>
         /// <param name="methodInfo">The method to implement.</param>
         /// <param name="methodArgTypes">The methods arguments.</param>
         private void EmitCallToProxyImplementation(
-            TypeFactoryContext context,
-            ILGenerator methodIL,
+            ProxyBuilderContext context,
+            IEmitter methodIL,
             MethodInfo methodInfo,
             Type[] methodArgTypes)
         {
             MethodInfo invokeMethod = typeof(IProxy).GetMethod("Invoke", new Type[] { typeof(MethodInfo), typeof(object[]) });
             MethodInfo makeGenericMethod = typeof(MethodInfo).GetMethod("MakeGenericMethod", new Type[] { typeof(Type[]) });
 
-            LocalBuilder localGenArgTypes = methodIL.DeclareLocal(typeof(Type[]));
-            LocalBuilder localArguments = methodIL.DeclareLocal(typeof(object[]));
-            LocalBuilder localMethodInfo = methodIL.DeclareLocal(typeof(MethodInfo));
+            methodIL
+                .DeclareLocal(typeof(Type[]), out ILocal localGenArgTypes)
+                .DeclareLocal(typeof(object[]), out ILocal localArguments)
+                .DeclareLocal(typeof(MethodInfo), out ILocal localMethodInfo);
 
             if (methodInfo.IsGenericMethodDefinition == true)
             {
                 Type[] genArgTypes = methodInfo.GetGenericArguments();
 
-                methodIL.EmitArray(
+                methodIL.Array(
                    typeof(Type),
                     localGenArgTypes,
                     genArgTypes.Length,
-                    (ilGen, index) =>
+                    (index) =>
                     {
-                        ilGen.EmitTypeOf(genArgTypes[index]);
+                        methodIL.EmitTypeOf(genArgTypes[index]);
                     });
             }
 
-            methodIL.Emit(OpCodes.Nop);
+            methodIL.Nop();
 
             // Build the arguments array.
-            methodIL.EmitArray(
+            methodIL.Array(
                 typeof(object),
                 localArguments,
                 methodArgTypes.Length,
-                (ilGen, index) =>
+                (index) =>
                 {
-                    ilGen.EmitLdArg(index);
-                    ilGen.EmitConv(methodArgTypes[index], typeof(object), false);
+                    methodIL
+                        .LdArg(index + 1)
+                        .Conv(methodArgTypes[index], typeof(object), false);
                 });
 
-            methodIL.Emit(OpCodes.Nop);
+            methodIL.Nop();
 
+Console.WriteLine("MethodName: {0}, Declaring Type: {1}", methodInfo.Name, methodInfo.DeclaringType);
+            
             if (methodInfo.IsGenericMethodDefinition == true)
             {
                 // Get the MethodInfo of the method being called on the proxy.
-                methodIL.EmitMethod(methodInfo);
-                methodIL.Emit(OpCodes.Ldloc_S, localGenArgTypes);
-                methodIL.Emit(OpCodes.Callvirt, makeGenericMethod);
-                methodIL.Emit(OpCodes.Stloc_S, localMethodInfo);
+                methodIL
+                    .EmitMethod(methodInfo, methodInfo.DeclaringType)
+                    .LdLoc(localGenArgTypes)
+                    .CallVirt(makeGenericMethod)
+                    .StLoc(localMethodInfo);
             }
             else
             {
                 // Get the MethodInfo of the method being called on the proxy.
-                methodIL.EmitMethod(methodInfo);
-                methodIL.Emit(OpCodes.Stloc_S, localMethodInfo);
+                methodIL
+                    .EmitMethod(methodInfo, methodInfo.DeclaringType)
+                    .StLoc(localMethodInfo);
             }
 
             // Call the proxy implementations invoke method.
-            methodIL.Emit(OpCodes.Ldarg_0);
-            methodIL.Emit(OpCodes.Ldfld, context.BaseObjectField);
-            methodIL.Emit(OpCodes.Ldloc_S, localMethodInfo);
-            methodIL.Emit(OpCodes.Ldloc_S, localArguments);
-            methodIL.Emit(OpCodes.Callvirt, invokeMethod);
+            methodIL
+                .LdArg0()
+                .LdFld(context.BaseObjectField)
+                .LdLoc(localMethodInfo)
+                .LdLoc(localArguments)
+                .CallVirt(invokeMethod);
 
             // Does the method have a return type?
             if (methodInfo.ReturnType != typeof(void))
             {
-                methodIL.EmitConv(typeof(object), methodInfo.ReturnType, false);
+                methodIL.Conv(typeof(object), methodInfo.ReturnType, false);
             }
             else
             {
                 // Remove the returned value
-                methodIL.Emit(OpCodes.Pop);
+                methodIL.Pop();
             }
 
             var parms = methodInfo.GetParameters();
@@ -351,84 +313,42 @@ namespace Proxy
                     if (parm.IsOut == true)
                     {
 
-                        methodIL.Emit(OpCodes.Ldarg, parm.Position + 1);
-                        methodIL.Emit(OpCodes.Ldloc, localArguments);
-                        methodIL.Emit(OpCodes.Ldc_I4, index);
-                        methodIL.Emit(OpCodes.Ldelem_Ref);
-                        methodIL.Emit(OpCodes.Stind_Ref);
-                        methodIL.Emit(OpCodes.Nop);
+                        methodIL
+                            .LdArg(parm.Position + 1)
+                            .LdLoc(localArguments)
+                            .LdcI4(index)
+                            .LdElemRef()
+                            .StIndRef()
+                            .Nop();
                     }
 
                     index++;
                 }
             }
 
-            methodIL.Emit(OpCodes.Ret);
+            methodIL.Ret();
         }
 
         /// <summary>
         /// Emits the IL for the <see cref="IProxiedObject"/> interfaces 'ProxiedObject' property.
         /// </summary>
-        /// <param name="context">The type factory context.</param>
-        private void EmitIProxiedObjectInterface(TypeFactoryContext context)
+        /// <param name="context">The proxy builder context.</param>
+        private void EmitIProxiedObjectInterface(ProxyBuilderContext context)
         {
-            MethodBuilder getProxiedObject = context.TypeBuilder.DefineMethod(
-                "get_ProxiedObject",
-                MethodAttributes.Virtual | MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot,
-                CallingConventions.HasThis,
-                typeof(object),
-                new Type[0]);
+            //context.TypeBuilder.Implements(typeof(IProxiedObject));
 
-            ILGenerator methodIL = getProxiedObject.GetILGenerator();
-            methodIL.Emit(OpCodes.Ldarg_0);
-            methodIL.Emit(OpCodes.Ldfld, context.BaseObjectField);
-            methodIL.Emit(OpCodes.Ret);
-
-            context.TypeBuilder.AddInterfaceImplementation(typeof(IProxiedObject));
-            PropertyBuilder propertyProxiedObject = context
+            var propertyProxiedObject = context
                 .TypeBuilder
-                .DefineProperty(
-                    "ProxiedObject",
-                    PropertyAttributes.None,
-                    typeof(object),
-                    Type.EmptyTypes);
-
-            propertyProxiedObject.SetGetMethod(getProxiedObject);
-        }
-
-        /// <summary>
-        /// Emits the IL for the <see cref="IProxyMetadata"/> interface.
-        /// </summary>
-        /// <param name="context">The type factory context.</param>
-        private void EmitIProxyMetadataInterface(TypeFactoryContext context)
-        {
-            context.TypeBuilder.AddInterfaceImplementation(typeof(IProxyMetadata));
-
-            context.TypeBuilder.EmitProperty<object>(
-                "InstanceData",
-                CallingConventions.HasThis,
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
-                (methodIL) =>
-                {
-                    methodIL.Emit(OpCodes.Ldarg_0);
-                    methodIL.Emit(OpCodes.Ldfld, context.BaseObjectField);
-                    methodIL.Emit(OpCodes.Ret);
-                },
-                null);
-
-            context
-                .TypeBuilder
-                .EmitProperty<IServiceProvider>(
-                    "ServiceProvider",
-                    CallingConventions.HasThis,
-                    MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
-                    (methodIL) =>
-                    {
-                        methodIL.Emit(OpCodes.Ldarg_0);
-                        methodIL.Emit(OpCodes.Ldfld, context.ServiceProviderField);
-                        methodIL.Emit(OpCodes.Ret);
-                    },
-                    null);
+                .NewProperty<object>("ProxiedObject")
+                .Getter(m => m
+                    .Public()
+                    .Virtual()
+                    .HideBySig()
+                    .NewSlot()
+                    .Body()
+                        .LdArg0()
+                        .LdFld(context.BaseObjectField)
+                        .Ret());
         }
     }
 }

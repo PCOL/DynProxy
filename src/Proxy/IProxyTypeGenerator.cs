@@ -29,24 +29,14 @@ namespace Proxy
     /// <summary>
     /// Defines the interface to the <see cref="ProxyTypeGenerator"/>.
     /// </summary>
-    internal interface IProxyTypeGenerator
+    public interface IProxyTypeGenerator
     {
-        /// <summary>
-        /// Gets or creates the <see cref="Type"/> that represents the proxy type.
-        /// </summary>
-        /// <typeparam name="T">The type of proxy required.</typeparam>
-        /// <param name="baseType">The base <see cref="Type"/> to proxy.</param>
-        /// <param name="scope">The current dependency injection scope.</param>
-        /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
-        Type GetOrCreateProxyType<T>(Type baseType, IServiceProvider scope = null);
-
         /// <summary>
         /// Generate the proxy instance.
         /// </summary>
         /// <typeparam name="T">The type of proxy to create.</typeparam>
         /// <param name="implementation">The proxy implementation.</param>
-        /// <param name="resolver">An <see cref="IServiceProvider"/>.</param>
         /// <returns>An instance of the proxy type.</returns>
-        T CreateProxy<T>(IProxy implementation, IServiceProvider resolver = null);
+        T CreateProxy<T>(IProxy implementation);
     }
 }

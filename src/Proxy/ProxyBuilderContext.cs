@@ -22,19 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-namespace Proxy.Reflection.Emit
+namespace Proxy
 {
     using System;
     using System.Linq;
     using System.Reflection.Emit;
+    using FluentIL;
 
     /// <summary>
-    /// Represent contextual data used by <see cref="TypeFactory"/> implementations.
+    /// Represent contextual data used by the <see cref="ProxyTypeGenerator"/>.
     /// </summary>
-    internal class TypeFactoryContext
+    internal class ProxyBuilderContext
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeFactoryContext"/> class.
+        /// Initializes a new instance of the <see cref="ProxyBuilderContext"/> class.
         /// </summary>
         /// <param name="typeBuilder">The <see cref="TypeBuilder"/> being use to create the type.</param>
         /// <param name="newType">The new type being built.</param>
@@ -43,56 +44,46 @@ namespace Proxy.Reflection.Emit
         /// <param name="baseObjectField">The <see cref="FieldBuilder"/> that holds the base type instance.</param>
         /// <param name="dependencyResolverField">The <see cref="FieldBuilder"/> that holds the <see cref="IServiceProvider"/> instance.</param>
         /// <param name="ctorBuilder">The <see cref="ConstructorBuilder"/> for the types constructor.</param>
-        public TypeFactoryContext(
-            TypeBuilder typeBuilder,
+        public ProxyBuilderContext(
+            ITypeBuilder typeBuilder,
             Type newType,
             Type baseType,
-            IServiceProvider currentDependencyScope,
-            FieldBuilder baseObjectField,
-            FieldBuilder dependencyResolverField,
-            ConstructorBuilder ctorBuilder = null)
+            IFieldBuilder baseObjectField,
+            IConstructorBuilder ctorBuilder = null)
             : this(typeBuilder,
                 newType,
                 new Type[] { baseType },
-                currentDependencyScope,
                 baseObjectField,
-                dependencyResolverField,
                 ctorBuilder)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeFactoryContext"/> class.
+        /// Initializes a new instance of the <see cref="ProxyBuilderContext"/> class.
         /// </summary>
         /// <param name="typeBuilder">The <see cref="TypeBuilder"/> being use to create the type.</param>
         /// <param name="newType">The new type being built.</param>
         /// <param name="baseTypes">The base types being built on.</param>
-        /// <param name="serviceProvider">The current dependency injection scope</param>
         /// <param name="baseObjectField">The <see cref="FieldBuilder"/> that holds the base type instance.</param>
-        /// <param name="serviceProviderField">The <see cref="FieldBuilder"/> that holds the <see cref="IServiceProvider"/> instance.</param>
         /// <param name="ctorBuilder">The <see cref="ConstructorBuilder"/> for the types constructor.</param>
-        public TypeFactoryContext(
-            TypeBuilder typeBuilder,
+        public ProxyBuilderContext(
+            ITypeBuilder typeBuilder,
             Type newType,
             Type[] baseTypes,
-            IServiceProvider serviceProvider,
-            FieldBuilder baseObjectField,
-            FieldBuilder serviceProviderField,
-            ConstructorBuilder ctorBuilder = null)
+            IFieldBuilder baseObjectField,
+            IConstructorBuilder ctorBuilder = null)
         {
             this.TypeBuilder = typeBuilder;
             this.NewType = newType;
             this.BaseTypes = baseTypes;
-            this.ServiceProvider = serviceProvider;
             this.BaseObjectField = baseObjectField;
-            this.ServiceProviderField = serviceProviderField;
             this.ConstructorBuilder = ctorBuilder;
         }
 
         /// <summary>
-        ///  Gets the <see cref="TypeBuilder"/>
+        ///  Gets the <see cref="ITypeBuilder"/>
         /// </summary>
-        public TypeBuilder TypeBuilder { get; }
+        public ITypeBuilder TypeBuilder { get; }
 
         /// <summary>
         /// Gets the new type.
@@ -116,35 +107,14 @@ namespace Proxy.Reflection.Emit
         public Type[] BaseTypes { get; }
 
         /// <summary>
-        /// Gets the dependency injection service provider.
-        /// </summary>
-        public IServiceProvider ServiceProvider { get; }
-
-        /// <summary>
         /// Gets the <see cref="FieldBuilder"/> which will contain the base object instance.
         /// </summary>
-        public FieldBuilder BaseObjectField { get; }
-
-        /// <summary>
-        /// Gets the <see cref="FieldBuilder"/> which will contain the dependency injection resolver.
-        /// </summary>
-        public FieldBuilder ServiceProviderField { get; }
+        public IFieldBuilder BaseObjectField { get; }
 
         /// <summary>
         /// Gets the <see cref="ConstructorBuilder"/> used to construct the new object.
         /// </summary>
-        public ConstructorBuilder ConstructorBuilder { get; }
-
-        /// <summary>
-        /// Creates a new <see cref="TypeFactoryContext"/> instance for a new interface type.
-        /// </summary>
-        /// <param name="interfaceType">The adapter <see cref="Type"/>.</param>
-        /// <returns>The new <see cref="TypeFactoryContext"/> instance.</returns>
-        public TypeFactoryContext CreateTypeFactoryContext(Type interfaceType)
-        {
-            var context = new TypeFactoryContext(this.TypeBuilder, interfaceType, this.BaseTypes, this.ServiceProvider, this.BaseObjectField, this.ServiceProviderField, this.ConstructorBuilder);
-            return context;
-        }
+        public IConstructorBuilder ConstructorBuilder { get; }
 
         /// <summary>
         /// Does the type build implement a given interface type
@@ -153,7 +123,10 @@ namespace Proxy.Reflection.Emit
         /// <returns>True if it does; otherwise false.</returns>
         public bool DoesTypeBuilderImplementInterface(Type ifaceType)
         {
-            return this.TypeBuilder.GetInterfaces().FirstOrDefault((type) => ifaceType == type) != null;
+            return this.TypeBuilder
+                .Define()
+                .GetInterfaces()
+                .FirstOrDefault(type => ifaceType == type) != null;
         }
     }
 }

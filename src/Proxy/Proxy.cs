@@ -43,20 +43,6 @@ namespace Proxy
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Proxy{T}"/> class.
-        /// </summary>
-        /// <param name="services">The dependency injection scope to use.</param>
-        protected Proxy(IServiceProvider services)
-        {
-            this.Services = services;
-        }
-
-        /// <summary>
-        /// Gets the dependency injection service provider.
-        /// </summary>
-        protected IServiceProvider Services { get; }
-
-        /// <summary>
         /// Implementation of the proxy invoke method.
         /// </summary>
         /// <param name="methodInfo">The details of the method being called.</param>
@@ -73,18 +59,14 @@ namespace Proxy
         /// <returns>The proxy object.</returns>
         public T GetProxyObject()
         {
-            IProxyTypeGenerator proxyFactory = null;
-            if (this.Services != null)
-            {
-                proxyFactory = this.Services.GetService<IProxyTypeGenerator>();
-            }
+            return this
+                .GetProxyTypeGenerator()
+                .CreateProxy<T>(this);
+        }
 
-            if (proxyFactory == null)
-            {
-                proxyFactory = new ProxyTypeGenerator();
-            }
-
-            return proxyFactory.CreateProxy<T>(this);
+        protected virtual IProxyTypeGenerator GetProxyTypeGenerator()
+        {
+            return new ProxyTypeGenerator();
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-namespace ProxyUnitTests.Resources
+namespace ProxyBenchmarks.Resources
 {
     using System;
     using System.Reflection;
@@ -13,25 +13,29 @@ namespace ProxyUnitTests.Resources
 
         protected override object Invoke(MethodInfo methodInfo, object[] arguments)
         {
-            if (methodInfo.Name == $"get_{nameof(IMyProxy.StringProperty)}")
+            if (methodInfo.Name == "EmptyMethod")
+            {
+                return null;
+            }
+            else if (methodInfo.Name == "get_StringProperty")
             {
                 return this.stringProperty;
             }
-            else if (methodInfo.Name == $"set_{nameof(IMyProxy.StringProperty)}")
+            else if (methodInfo.Name == "set_StringProperty")
             {
                 this.stringProperty = (string)arguments[0];
                 return null;
             }
-            else if (methodInfo.Name == $"get_{nameof(IMyProxy.BooleanProperty)}")
+            else if (methodInfo.Name == "get_BooleanProperty")
             {
                 return this.stringProperty;
             }
-            else if (methodInfo.Name == $"set_{nameof(IMyProxy.BooleanProperty)}")
+            else if (methodInfo.Name == "set_BooleanProperty")
             {
                 this.booleanProperty = (bool?)arguments[0];
                 return null;
             }
-            else if (methodInfo.Name == nameof(IMyProxy.TryGetStringProperty))
+            else if (methodInfo.Name == "TryGetStringProperty")
             {
                 if (this.stringProperty != null)
                 {

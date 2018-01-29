@@ -12,5 +12,7 @@
     <Content Include="CreateProxyUnitTests.cs" />
     <Content Include="Resources\MyProxy.cs" />
     <Content Include="Resources\IMyProxy.cs" />
+    <Content Include="Resources\IGenericProxy.cs" />
+    <Content Include="Resources\GenericProxy.cs" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,18 @@
 namespace ProxyUnitTests
 {
+    using FluentIL;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using ProxyUnitTests.Resources;
 
     [TestClass]
     public class CreateProxyUnitTests
     {
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            //DebugOutput.Output = new ConsoleOutput();
+        }
+
         [TestMethod]
         public void CreateProxy_CallAddMethod_AddsTwoIntegers()
         {
@@ -56,6 +63,19 @@ namespace ProxyUnitTests
 
             Assert.IsTrue(result);
             Assert.IsTrue(value);
+        }
+
+        [TestMethod]
+        public void CreateGenericProxy_OfTypeString()
+        {
+            var proxy = new GenericProxy<string>();
+            var realProxy = proxy.GetProxyObject();
+
+            Assert.IsNotNull(realProxy);
+
+            realProxy.SetProperty("Test");
+
+            Assert.AreEqual("Test", realProxy.Property);
         }
     }
 }
