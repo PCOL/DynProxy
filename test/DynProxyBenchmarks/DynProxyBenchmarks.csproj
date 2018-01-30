@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.12" />
-    <ProjectReference Include="..\..\src\Proxy\Proxy.csproj" />
+    <ProjectReference Include="..\..\src\DynProxy\DynProxy.csproj" />
     <Content Include="Resources\IMyProxy.cs" />
     <Content Include="Resources\MyProxy.cs" />
     <Content Include="Program.cs" />

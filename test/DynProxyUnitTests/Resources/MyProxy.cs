@@ -1,8 +1,8 @@
-namespace ProxyUnitTests.Resources
+namespace DynProxyUnitTests.Resources
 {
     using System;
     using System.Reflection;
-    using Proxy;
+    using DynProxy;
 
     public class MyProxy
         : Proxy<IMyProxy>

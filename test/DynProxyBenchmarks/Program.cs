@@ -1,4 +1,4 @@
-﻿namespace ProxyBenchmarks
+﻿namespace DynProxyBenchmarks
 {
     using System;
     using BenchmarkDotNet.Running;

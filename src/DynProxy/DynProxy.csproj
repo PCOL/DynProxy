@@ -1,6 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>alpha1</VersionSuffix>
+    <PackageId>DynProxy</PackageId>
+    <Authors>pcol</Authors>
+    <AssemblyTitle>DynProxy</AssemblyTitle>
+    <Description>A simple dynamic proxy.</Description>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <PackageTags>dynamic proxy</PackageTags>
+    <PackageProjectUrl>https://github.com/PCOL/DynProxy</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/PCOL/DynProxy/blob/master/LICENSE</PackageLicenseUrl>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <DebugType>portable</DebugType>
+    <AssemblyName>DynProxy</AssemblyName>
+    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Reflection" Version="4.3.0"/>

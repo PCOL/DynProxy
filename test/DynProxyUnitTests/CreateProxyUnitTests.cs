@@ -1,8 +1,8 @@
-namespace ProxyUnitTests
+namespace DynProxyUnitTests
 {
+    using DynProxyUnitTests.Resources;
     using FluentIL;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using ProxyUnitTests.Resources;
 
     [TestClass]
     public class CreateProxyUnitTests

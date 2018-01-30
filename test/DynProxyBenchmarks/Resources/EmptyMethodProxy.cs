@@ -1,7 +1,7 @@
-namespace ProxyBenchmarks.Resources
+namespace DynProxyBenchmarks.Resources
 {
     using System.Reflection;
-    using Proxy;
+    using DynProxy;
 
     public class EmptyMethodProxy
         : Proxy<IEmptyMethodProxy>

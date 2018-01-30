@@ -1,4 +1,4 @@
-namespace ProxyUnitTests.Resources
+namespace DynProxyUnitTests.Resources
 {
     public interface IMyProxy
     {

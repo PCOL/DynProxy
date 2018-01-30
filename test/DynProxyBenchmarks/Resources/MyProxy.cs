@@ -1,8 +1,8 @@
-namespace ProxyBenchmarks.Resources
+namespace DynProxyBenchmarks.Resources
 {
     using System;
     using System.Reflection;
-    using Proxy;
+    using DynProxy;
 
     public class MyProxy
         : Proxy<IMyProxy>

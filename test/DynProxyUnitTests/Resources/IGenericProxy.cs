@@ -1,4 +1,4 @@
-namespace ProxyUnitTests
+namespace DynProxyUnitTests
 {
     public interface IGenericProxy<T>
     {

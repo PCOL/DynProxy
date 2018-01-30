@@ -1,9 +1,9 @@
-namespace ProxyBenchmarks
+namespace DynProxyBenchmarks
 {
     using BenchmarkDotNet;
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Attributes.Jobs;
-    using ProxyBenchmarks.Resources;
+    using DynProxyBenchmarks.Resources;
 
     [CoreJob()]
     public class CreateProxyBenchmarks

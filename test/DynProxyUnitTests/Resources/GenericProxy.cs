@@ -1,14 +1,15 @@
-namespace ProxyUnitTests
+namespace DynProxyUnitTests
 {
     using System;
-    using Proxy;
+    using System.Reflection;
+    using DynProxy;
 
     public class GenericProxy<T>
         : Proxy<IGenericProxy<T>>
     {
         private T property;
 
-        protected override object Invoke(System.Reflection.MethodInfo methodInfo, object[] arguments)
+        protected override object Invoke(MethodInfo methodInfo, object[] arguments)
         {
             if (methodInfo.Name == nameof(IGenericProxy<string>.SetProperty))
             {

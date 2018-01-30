@@ -1,7 +1,7 @@
-namespace ProxyBenchmarks
+namespace DynProxyBenchmarks
 {
     using BenchmarkDotNet.Attributes;
-    using ProxyBenchmarks.Resources;
+    using DynProxyBenchmarks.Resources;
 
     public class CallProxyBenchmarks
     {

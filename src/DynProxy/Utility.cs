@@ -1,4 +1,4 @@
-namespace Proxy
+namespace DynProxy
 {
     using System;
     using System.Collections.Generic;

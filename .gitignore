@@ -19,5 +19,5 @@ TestResults
 [Rr]elease/
 x64/
 
-test/ProxyBenchmarks/BenchmarkDotNet.Artifacts
+test/DynProxyBenchmarks/BenchmarkDotNet.Artifacts
 .vscode
