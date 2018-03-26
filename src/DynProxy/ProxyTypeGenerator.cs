@@ -265,8 +265,6 @@ namespace DynProxy
                 });
 
             methodIL.Nop();
-
-Console.WriteLine("MethodName: {0}, Declaring Type: {1}", methodInfo.Name, methodInfo.DeclaringType);
             
             if (methodInfo.IsGenericMethodDefinition == true)
             {

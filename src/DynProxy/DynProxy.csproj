@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>alpha1</VersionSuffix>
+    <VersionSuffix>alpha02</VersionSuffix>
     <PackageId>DynProxy</PackageId>
     <Authors>pcol</Authors>
     <AssemblyTitle>DynProxy</AssemblyTitle>
@@ -16,17 +17,18 @@
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Reflection" Version="4.3.0"/>
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0"/>
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4"/>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0"/>
-    <PackageReference Include="Fluent.IL" Version="1.0.0-Alpha4"/>
-    <Content Include="IProxy.cs"/>
-    <Content Include="IProxiedObject.cs"/>
-    <Content Include="IProxyTypeGenerator.cs"/>
-    <Content Include="Proxy.cs"/>
-    <Content Include="ProxyTypeGenerator.cs"/>
-    <Content Include="ProxyBuilderContext.cs"/>
-    <Content Include="Utility.cs"/>
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Fluent.IL" Version="1.0.0-Alpha4" />
+    <Content Include="IProxy.cs" />
+    <Content Include="IProxiedObject.cs" />
+    <Content Include="IProxyTypeGenerator.cs" />
+    <Content Include="Proxy.cs" />
+    <Content Include="ProxyTypeGenerator.cs" />
+    <Content Include="ProxyBuilderContext.cs" />
+    <Content Include="Utility.cs" />
+    <Content Include="ProxyExtensionMethods.cs" />
   </ItemGroup>
 </Project>
