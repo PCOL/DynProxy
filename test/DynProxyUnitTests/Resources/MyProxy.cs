@@ -41,7 +41,7 @@ namespace DynProxyUnitTests.Resources
 
                 return false;
             }
-            else if (methodInfo.Name == "TryGetBooleanProperty")
+            else if (methodInfo.Name == nameof(IMyProxy.TryGetBooleanProperty))
             {
                 if (this.booleanProperty.HasValue == true)
                 {
