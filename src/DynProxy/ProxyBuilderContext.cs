@@ -33,6 +33,7 @@ namespace DynProxy
     /// Represent contextual data used by the <see cref="ProxyTypeGenerator"/>.
     /// </summary>
     internal class ProxyBuilderContext
+        : IProxyBuilderContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProxyBuilderContext"/> class.
