@@ -114,7 +114,7 @@ namespace DynProxy
         /// <param name="proxyTargetType">The target type to receive the proxied calls.</param>
         /// <param name="proxyOptions">The proxy generation options.</param>
         /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
-        public Type GenerateProxyType(
+        private Type GenerateProxyType(
             Type proxyType,
             Type proxyTargetType,
             ProxyOptions proxyOptions = null)
@@ -130,7 +130,7 @@ namespace DynProxy
         /// <param name="action">An action to allow build type injection.</param>
         /// <param name="proxyOptions">The proxy generation options.</param>
         /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
-        public Type GenerateProxyType(
+        private Type GenerateProxyType(
             Type proxyType,
             Type proxyTargetType,
             Action<IProxyBuilderContext> action,
