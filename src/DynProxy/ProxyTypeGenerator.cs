@@ -89,6 +89,17 @@ namespace DynProxy
         /// <returns>An instance of the proxy type.</returns>
         public object CreateProxy(Type proxyType, IProxy implementation, Action<IProxyBuilderContext> action = null, ProxyOptions proxyOptions = null)
         {
+            return CreateProxy(proxyType, null, implementation, action, proxyOptions);
+        }
+
+        /// <summary>
+        /// Generate the proxy instance.
+        /// </summary>
+        /// <typeparam name="T">The type of proxy to create.</typeparam>
+        /// <param name="implementation">The proxy implementation.</param>
+        /// <returns>An instance of the proxy type.</returns>
+        public object CreateProxy(Type proxyType, Type poxyBaseType, IProxy implementation, Action<IProxyBuilderContext> action = null, ProxyOptions proxyOptions = null)
+        {
             Utility.ThrowIfArgumentNull(implementation, nameof(implementation));
 
             var typeName = proxyOptions?.TypeName ?? TypeName(proxyType, typeof(IProxy));
@@ -101,7 +112,7 @@ namespace DynProxy
 
             if (proxy == null)
             {
-                proxy = this.GenerateProxyType(proxyType, typeof(IProxy), action, proxyOptions);
+                proxy = this.GenerateProxyType(proxyType, typeof(IProxy), poxyBaseType, action, proxyOptions);
             }
 
             return Activator.CreateInstance(proxy, implementation);
@@ -119,7 +130,7 @@ namespace DynProxy
             Type proxyTargetType,
             ProxyOptions proxyOptions = null)
         {
-            return this.GenerateProxyType(proxyType, proxyTargetType, null, proxyOptions);
+            return this.GenerateProxyType(proxyType, proxyTargetType, null, null, proxyOptions);
         }
 
         /// <summary>
@@ -133,10 +144,17 @@ namespace DynProxy
         private Type GenerateProxyType(
             Type proxyType,
             Type proxyTargetType,
+            Type proxyBaseType,
             Action<IProxyBuilderContext> action,
             ProxyOptions proxyOptions = null)
         {
-            if (proxyType.IsInterface == false)
+            if (proxyBaseType?.IsInterface == true)
+            {
+                throw new ArgumentException("Argument cannot be an interface", "proxyBaseType");
+            }
+
+            if (proxyType.IsInterface == false &&
+                proxyType != proxyBaseType)
             {
                 throw new ArgumentException("Argument is not an interface", "proxyType");
             }
@@ -152,9 +170,18 @@ namespace DynProxy
                 .Default
                 .NewType(typeName)
                     .Public()
-                    .Implements(proxyType)
                     .Implements(typeof(IProxiedObject));
-            
+
+            if (proxyType.IsInterface == true)
+            {
+                typeBuilder.Implements(proxyType);
+            }
+
+            if (proxyBaseType != null)
+            {
+                typeBuilder.InheritsFrom(proxyBaseType);
+            }
+
             var targetField = typeBuilder
                 .NewField<IProxy>("target")
                 .Private();
@@ -167,7 +194,10 @@ namespace DynProxy
 
             action?.Invoke(context);
 
-            this.ImplementInterface(context);
+            if (proxyType.IsInterface == true)
+            {
+                this.ImplementInterface(context);
+            }
 
             this.EmitConstructor(context);
 
