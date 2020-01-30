@@ -24,8 +24,6 @@ SOFTWARE.
 
 namespace DynProxy
 {
-    using System;
-
     /// <summary>
     /// Defines the interface to the <see cref="ProxyTypeGenerator"/>.
     /// </summary>

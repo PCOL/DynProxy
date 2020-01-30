@@ -24,6 +24,8 @@ SOFTWARE.
 
 namespace DynProxy
 {
+    using System;
+    using System.Linq;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -40,6 +42,170 @@ namespace DynProxy
         {
             return services
                 .AddSingleton<IProxyTypeGenerator, ProxyTypeGenerator>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddScopedInterceptor<TService, TImplementation>(this IServiceCollection services)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.AddScoped<TService>(
+                sp =>
+                {
+                    var impl = sp.GetOrCreateInstance<TImplementation>();
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <param name="implementationFactory">An implementation factory.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddScopedInterceptor<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
+        {
+            return services.AddScoped<TService>(
+                sp =>
+                {
+                    var impl = implementationFactory(sp);
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddTransientInterceptor<TService, TImplementation>(this IServiceCollection services)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.AddTransient<TService>(
+                sp =>
+                {
+                    var impl = sp.GetOrCreateInstance<TImplementation>();
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <param name="implementationFactory">An implementation factory.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddTransientInterceptor<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
+        {
+            return services.AddTransient<TService>(
+                sp =>
+                {
+                    var impl = implementationFactory(sp);
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+       /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddSingletonInterceptor<TService, TImplementation>(this IServiceCollection services)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            return services.AddSingleton<TService>(
+                sp =>
+                {
+                    var impl = sp.GetOrCreateInstance<TImplementation>();
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+        /// <summary>
+        /// Adds a singleton interceptor.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="services">A <see cref="IServiceCollection"/>.</param>
+        /// <param name="implementationFactory">An implementation factory.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddSingletonInterceptor<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
+        {
+            return services.AddSingleton<TService>(
+                sp =>
+                {
+                    var impl = implementationFactory(sp);
+                    var interceptor = new Interceptor<TService>(impl);
+                    return interceptor.Intercepted;
+                });
+        }
+
+        /// <summary>
+        /// Gets or creates an instance of the implementation.
+        /// </summary>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
+        /// <param name="serviceProvider">A service provider.</param>
+        /// <returns>The service provider.</returns>
+        private static TImplementation GetOrCreateInstance<TImplementation>(this IServiceProvider serviceProvider)
+        {
+            var impl = serviceProvider.GetService<TImplementation>();
+            if (impl == null)
+            {
+                impl = serviceProvider.CreateInstance<TImplementation>();
+            }
+
+            return impl;
+        }
+
+        /// <summary>
+        /// Creates an instance of the implementation.
+        /// </summary>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
+        /// <param name="serviceProvider">A service provider.</param>
+        /// <returns>The service provider.</returns>
+        private static TImplementation CreateInstance<TImplementation>(this IServiceProvider serviceProvider)
+        {
+            TImplementation impl = default(TImplementation);
+            var ctors = typeof(TImplementation).GetConstructors();
+            var ctor = ctors.FirstOrDefault();
+            var parms = ctor?.GetParameters();
+            if (parms.Any() == true)
+            {
+                object[] values = new object[parms.Length];
+                for (int i = 0; i < values.Length; i++)
+                {
+                    values[i] = serviceProvider.GetRequiredService(parms[i].ParameterType);
+                }
+
+                impl = (TImplementation)Activator.CreateInstance(typeof(TImplementation), values);
+            }
+            else
+            {
+                impl = Activator.CreateInstance<TImplementation>();
+            }
+
+            return impl;
         }
     }
 }

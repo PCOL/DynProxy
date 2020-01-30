@@ -24,9 +24,7 @@ SOFTWARE.
 
 namespace DynProxy
 {
-    using System;
     using System.Reflection;
-    using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
     /// Represents an abstract proxy implementation.

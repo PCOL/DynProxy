@@ -26,8 +26,6 @@ namespace DynProxy
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.SymbolStore;
-    using System.Dynamic;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
