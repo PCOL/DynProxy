@@ -194,7 +194,7 @@ namespace DynProxy
 
             if (proxyType.IsInterface == true)
             {
-                this.ImplementInterface(context);
+                this.ImplementInterfaces(context, context.NewType);
             }
 
             this.EmitConstructor(context);
@@ -210,11 +210,28 @@ namespace DynProxy
         /// Implements the interface for the proxy type.
         /// </summary>
         /// <param name="context">The current builder context.</param>
-        private void ImplementInterface(ProxyBuilderContext context)
+        private void ImplementInterfaces(ProxyBuilderContext context, Type interfaceType)
+        {
+            this.ImplementInterface(context, interfaceType);
+            var interfaces = interfaceType.GetInterfaces();
+            if (interfaces != null)
+            {
+                foreach (var iface in interfaces)
+                {
+                    this.ImplementInterfaces(context, iface);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Implements the interface for the proxy type.
+        /// </summary>
+        /// <param name="context">The current builder context.</param>
+        private void ImplementInterface(ProxyBuilderContext context, Type interfaceType)
         {
             var propertyMethods = new Dictionary<string, IMethodBuilder>();
 
-            foreach (var memberInfo in context.NewType.GetMembers())
+            foreach (var memberInfo in interfaceType.GetMembers())
             {
                 if (memberInfo.MemberType == MemberTypes.Method)
                 {

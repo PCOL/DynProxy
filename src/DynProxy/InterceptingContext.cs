@@ -1,5 +1,6 @@
 namespace DynProxy
 {
+    using System.Collections.Generic;
     using System.Reflection;
 
     /// <summary>
@@ -32,5 +33,33 @@ namespace DynProxy
         /// Gets the arguments.
         /// </summary>
         public object[] Arguments { get; }
+
+        /// <summary>
+        /// Gets the properties.
+        /// </summary>
+        internal Dictionary<string, object> Properties { get; private set; }
+
+        /// <summary>
+        /// Gets or sets custom properties.
+        /// </summary>
+        public object this[string key]
+        {
+            get
+            {
+                if (this.Properties != null &&
+                    this.Properties.TryGetValue(key, out object value) == true)
+                {
+                    return value;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                this.Properties = this.Properties ?? new Dictionary<string, object>();
+                this.Properties[key] = value;
+            }
+        }
     }
 }

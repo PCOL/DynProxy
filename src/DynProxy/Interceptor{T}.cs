@@ -5,6 +5,7 @@ namespace DynProxy
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Diagnostics;
 
     /// <summary>
     /// Represents a type interceptor.
@@ -23,6 +24,11 @@ namespace DynProxy
         /// A list of type level interceptor types.
         /// </summary>
         private readonly IEnumerable<Type> baseInterceptorTypes;
+
+        /// <summary>
+        /// The inteceptor.
+        /// </summary>
+        private readonly T interceptor;
 
         /// <summary>
         /// A dictionary of method interceptor types.
@@ -52,13 +58,17 @@ namespace DynProxy
                 this.baseInterceptorTypes = attrs.Select(a => a.InterceptorType);
             }
 
-            this.Intercepted = new ProxyTypeGenerator().CreateProxy<T>(this);
+            this.interceptor = new ProxyTypeGenerator().CreateProxy<T>(this);
         }
 
         /// <summary>
-        /// Gets the intercepted instance.
+        /// Builds the interceptor.
         /// </summary>
-        public T Intercepted { get; }
+        /// <returns>The interceptor.</returns>
+        public T Build()
+        {
+            return this.interceptor;
+        }
 
         /// <inheritdoc />
         public object Invoke(MethodInfo methodInfo, object[] arguments)
@@ -86,39 +96,39 @@ namespace DynProxy
             var interceptors = interceptorTypes.Distinct().Select(t => (IInterceptor) Activator.CreateInstance(t));
             if (interceptors.Any() == true)
             {
-                var context = new InterceptingContext(methodInfo, arguments);
+                var interceptingContext = new InterceptingContext(methodInfo, arguments);
                 foreach (var interceptor in interceptors)
                 {
                     if (isAsync == true)
                     {
-                        interceptor.BeforeMethodAsync(context).Wait();
+                        interceptor.BeforeMethodAsync(interceptingContext).Wait();
                     }
                     else
                     {
-                        interceptor.BeforeMethod(context);
+                        interceptor.BeforeMethod(interceptingContext);
                     }
                 }
-            }
 
-            var returnObj = methodInfo.Invoke(this.interceptedInstance, arguments);
+                var sw = Stopwatch.StartNew();
+                var returnObj = methodInfo.Invoke(this.interceptedInstance, arguments);
 
-            if (interceptors.Any() == true)
-            {
-                var context = new InterceptedContext(methodInfo, arguments, returnObj);
+                var interceptedContext = new InterceptedContext(methodInfo, arguments, returnObj, sw.Elapsed, interceptingContext.Properties);
                 foreach (var interceptor in interceptors)
                 {
                     if (isAsync == true)
                     {
-                        interceptor.AfterMethodAsync(context).Wait();
+                        interceptor.AfterMethodAsync(interceptedContext).Wait();
                     }
                     else
                     {
-                        interceptor.AfterMethod(context);
+                        interceptor.AfterMethod(interceptedContext);
                     }
                 }
+
+                return returnObj;
             }
 
-            return returnObj;
+            return methodInfo.Invoke(this.interceptedInstance, arguments);
         }
     }
 }

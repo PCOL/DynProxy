@@ -60,7 +60,7 @@ namespace DynProxy
                 {
                     var impl = sp.GetOrCreateInstance<TImplementation>();
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
@@ -79,7 +79,7 @@ namespace DynProxy
                 {
                     var impl = implementationFactory(sp);
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
@@ -99,7 +99,7 @@ namespace DynProxy
                 {
                     var impl = sp.GetOrCreateInstance<TImplementation>();
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
@@ -118,7 +118,7 @@ namespace DynProxy
                 {
                     var impl = implementationFactory(sp);
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
@@ -138,7 +138,7 @@ namespace DynProxy
                 {
                     var impl = sp.GetOrCreateInstance<TImplementation>();
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
@@ -157,7 +157,7 @@ namespace DynProxy
                 {
                     var impl = implementationFactory(sp);
                     var interceptor = new Interceptor<TService>(impl);
-                    return interceptor.Intercepted;
+                    return interceptor.Build();
                 });
         }
 
