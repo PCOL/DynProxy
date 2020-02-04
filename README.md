@@ -1,2 +1,3 @@
 # Proxy
-.Net library for adding runtime proxy support
+
+.Net library for generating lightweight runtime dynamic proxies.
