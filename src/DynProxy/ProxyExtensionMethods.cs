@@ -34,7 +34,7 @@ namespace DynProxy
     public static class ProxyExtensionMethods
     {
         /// <summary>
-        /// Adds proxy services to a <see cref="IServiceCollection"/>
+        /// Adds proxy services to a <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">A <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
@@ -45,7 +45,7 @@ namespace DynProxy
         }
 
         /// <summary>
-        /// 
+        /// Adds a scoped interceptor to dependency injection.
         /// </summary>
         /// <typeparam name="TService">The service type.</typeparam>
         /// <typeparam name="TImplementation">The implementation type.</typeparam>
@@ -65,7 +65,7 @@ namespace DynProxy
         }
 
         /// <summary>
-        /// 
+        /// Adds a scoped interceptor to dependency injection.
         /// </summary>
         /// <typeparam name="TService">The service type.</typeparam>
         /// <param name="services">A <see cref="IServiceCollection"/>.</param>
@@ -84,7 +84,7 @@ namespace DynProxy
         }
 
         /// <summary>
-        /// 
+        /// Adds a transient interceptor to dependency injection.
         /// </summary>
         /// <typeparam name="TService">The service type.</typeparam>
         /// <typeparam name="TImplementation">The implementation type.</typeparam>
@@ -104,7 +104,7 @@ namespace DynProxy
         }
 
         /// <summary>
-        /// 
+        /// Adds a transient interceptor to dependency injection.
         /// </summary>
         /// <typeparam name="TService">The service type.</typeparam>
         /// <param name="services">A <see cref="IServiceCollection"/>.</param>
@@ -122,8 +122,8 @@ namespace DynProxy
                 });
         }
 
-       /// <summary>
-        /// 
+        /// <summary>
+        /// Adds a singleton interceptor to dependency injection.
         /// </summary>
         /// <typeparam name="TService">The service type.</typeparam>
         /// <typeparam name="TImplementation">The implementation type.</typeparam>

@@ -29,6 +29,7 @@ namespace DynProxy
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Threading.Tasks;
     using FluentIL;
 
     /// <summary>
@@ -82,21 +83,26 @@ namespace DynProxy
         /// <summary>
         /// Generate the proxy instance.
         /// </summary>
-        /// <typeparam name="T">The type of proxy to create.</typeparam>
+        /// <param name="proxyType">The proxy type.</param>
         /// <param name="implementation">The proxy implementation.</param>
+        /// <param name="action">Optional proxy builder action.</param>
+        /// <param name="proxyOptions">Optional proxy options.</param>
         /// <returns>An instance of the proxy type.</returns>
         public object CreateProxy(Type proxyType, IProxy implementation, Action<IProxyBuilderContext> action = null, ProxyOptions proxyOptions = null)
         {
-            return CreateProxy(proxyType, null, implementation, action, proxyOptions);
+            return this.CreateProxy(proxyType, null, implementation, action, proxyOptions);
         }
 
         /// <summary>
         /// Generate the proxy instance.
         /// </summary>
-        /// <typeparam name="T">The type of proxy to create.</typeparam>
+        /// <param name="proxyType">The proxy type.</param>
+        /// <param name="proxyBaseType">The proxy base type.</param>
         /// <param name="implementation">The proxy implementation.</param>
+        /// <param name="action">Optional proxy builder action.</param>
+        /// <param name="proxyOptions">Optional proxy options.</param>
         /// <returns>An instance of the proxy type.</returns>
-        public object CreateProxy(Type proxyType, Type poxyBaseType, IProxy implementation, Action<IProxyBuilderContext> action = null, ProxyOptions proxyOptions = null)
+        public object CreateProxy(Type proxyType, Type proxyBaseType, IProxy implementation, Action<IProxyBuilderContext> action = null, ProxyOptions proxyOptions = null)
         {
             Utility.ThrowIfArgumentNull(implementation, nameof(implementation));
 
@@ -110,7 +116,7 @@ namespace DynProxy
 
             if (proxy == null)
             {
-                proxy = this.GenerateProxyType(proxyType, typeof(IProxy), poxyBaseType, action, proxyOptions);
+                proxy = this.GenerateProxyType(proxyType, typeof(IProxy), proxyBaseType, action, proxyOptions);
             }
 
             return Activator.CreateInstance(proxy, implementation);
@@ -136,6 +142,7 @@ namespace DynProxy
         /// </summary>
         /// <param name="proxyType">The interface the proxy type must implement.</param>
         /// <param name="proxyTargetType">The target type to receive the proxied calls.</param>
+        /// <param name="proxyBaseType">The base type.</param>
         /// <param name="action">An action to allow build type injection.</param>
         /// <param name="proxyOptions">The proxy generation options.</param>
         /// <returns>A <see cref="Type"/> representing the proxy type.</returns>
@@ -188,7 +195,8 @@ namespace DynProxy
                 typeBuilder,
                 proxyType,
                 proxyTargetType,
-                targetField);
+                targetField,
+                null);
 
             action?.Invoke(context);
 
@@ -210,6 +218,7 @@ namespace DynProxy
         /// Implements the interface for the proxy type.
         /// </summary>
         /// <param name="context">The current builder context.</param>
+        /// <param name="interfaceType">The interface type.</param>
         private void ImplementInterfaces(ProxyBuilderContext context, Type interfaceType)
         {
             this.ImplementInterface(context, interfaceType);
@@ -227,6 +236,7 @@ namespace DynProxy
         /// Implements the interface for the proxy type.
         /// </summary>
         /// <param name="context">The current builder context.</param>
+        /// <param name="interfaceType">The interface type.</param>
         private void ImplementInterface(ProxyBuilderContext context, Type interfaceType)
         {
             var propertyMethods = new Dictionary<string, IMethodBuilder>();
@@ -328,6 +338,7 @@ namespace DynProxy
             Type[] methodArgTypes)
         {
             MethodInfo invokeMethod = typeof(IProxy).GetMethod("Invoke", new Type[] { typeof(MethodInfo), typeof(object[]) });
+            MethodInfo invokeAsyncMethod = typeof(IProxy).GetMethod("InvokeAsync", new Type[] { typeof(MethodInfo), typeof(object[]) });
             MethodInfo makeGenericMethod = typeof(MethodInfo).GetMethod("MakeGenericMethod", new Type[] { typeof(Type[]) });
 
             methodIL
@@ -340,7 +351,7 @@ namespace DynProxy
                 Type[] genArgTypes = methodInfo.GetGenericArguments();
 
                 methodIL.Array(
-                   typeof(Type),
+                    typeof(Type),
                     localGenArgTypes,
                     genArgTypes.Length,
                     (index) =>
@@ -364,7 +375,7 @@ namespace DynProxy
                 });
 
             methodIL.Nop();
-            
+
             if (methodInfo.IsGenericMethodDefinition == true)
             {
                 // Get the MethodInfo of the method being called on the proxy.
@@ -382,44 +393,86 @@ namespace DynProxy
                     .StLoc(localMethodInfo);
             }
 
-            // Call the proxy implementations invoke method.
-            methodIL
-                .LdArg0()
-                .LdFld(context.BaseObjectField)
-                .LdLoc(localMethodInfo)
-                .LdLoc(localArguments)
-                .CallVirt(invokeMethod);
+            methodIL.Nop();
 
-            // Does the method have a return type?
-            if (methodInfo.ReturnType != typeof(void))
+            if (methodInfo.ReturnType == typeof(Task) ||
+                (methodInfo.ReturnType.IsGenericType == true && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)))
             {
-                methodIL.Conv(typeof(object), methodInfo.ReturnType, false);
+                var actualReturnType = methodInfo.ReturnType.GetGenericArguments()[0];
+                var asyncTaskExecutorType = typeof(AsyncTaskExecutor<>).MakeGenericType(actualReturnType);
+                var asyncTaskExecutorTypeCtor = asyncTaskExecutorType.GetConstructor(new[] { typeof(IProxy), typeof(MethodInfo), typeof(object[]) });
+                var asyncTaskExecutorExecuteAsync = asyncTaskExecutorType.GetMethod("ExecuteAsync");
+
+                methodIL
+                    .DeclareLocal(asyncTaskExecutorType, out ILocal localAsyncProxy)
+                    .DeclareLocal(typeof(Task<>).MakeGenericType(actualReturnType), out ILocal localReturn)
+
+/* class
+                    .LdArg0()
+                    .LdFld(context.BaseObjectField)
+                    .LdLoc(localMethodInfo)
+                    .LdLoc(localArguments)
+                    .Newobj(asyncTaskExecutorTypeCtor)
+                    .StLoc(localAsyncProxy)
+
+                    .LdLoc(localAsyncProxy)
+                    .Call(asyncTaskExecutorExecuteAsync)
+                    .StLoc(localReturn)
+*/
+
+/* Struct */
+                    .LdLocAS(localAsyncProxy)
+                    .LdArg0()
+                    .LdFld(context.BaseObjectField)
+                    .LdLoc(localMethodInfo)
+                    .LdLoc(localArguments)
+                    .Call(asyncTaskExecutorTypeCtor)
+                    .LdLocAS(localAsyncProxy)
+                    .Call(asyncTaskExecutorExecuteAsync)
+                    .StLoc(localReturn)
+
+                    .LdLoc(localReturn);
             }
             else
             {
-                // Remove the returned value
-                methodIL.Pop();
-            }
+                // Call the proxy implementations invoke method.
+                methodIL
+                    .LdArg0()
+                    .LdFld(context.BaseObjectField)
+                    .LdLoc(localMethodInfo)
+                    .LdLoc(localArguments)
+                    .CallVirt(invokeMethod);
 
-            var parms = methodInfo.GetParameters();
-            if (parms.Any() == true)
-            {
-                int index = 0;
-                foreach (var parm in parms)
+                // Does the method have a return type?
+                if (methodInfo.ReturnType != typeof(void))
                 {
-                    if (parm.IsOut == true)
+                    methodIL.Conv(typeof(object), methodInfo.ReturnType, false);
+                }
+                else
+                {
+                    // Remove the returned value
+                    methodIL.Pop();
+                }
+
+                var parms = methodInfo.GetParameters();
+                if (parms.Any() == true)
+                {
+                    int index = 0;
+                    foreach (var parm in parms)
                     {
+                        if (parm.IsOut == true)
+                        {
+                            methodIL
+                                .LdArg(parm.Position + 1)
+                                .LdLoc(localArguments)
+                                .LdcI4(index)
+                                .LdElemRef()
+                                .StIndRef()
+                                .Nop();
+                        }
 
-                        methodIL
-                            .LdArg(parm.Position + 1)
-                            .LdLoc(localArguments)
-                            .LdcI4(index)
-                            .LdElemRef()
-                            .StIndRef()
-                            .Nop();
+                        index++;
                     }
-
-                    index++;
                 }
             }
 
@@ -432,8 +485,6 @@ namespace DynProxy
         /// <param name="context">The proxy builder context.</param>
         private void EmitIProxiedObjectInterface(ProxyBuilderContext context)
         {
-            //context.TypeBuilder.Implements(typeof(IProxiedObject));
-
             var propertyProxiedObject = context
                 .TypeBuilder
                 .NewProperty<object>("ProxiedObject")

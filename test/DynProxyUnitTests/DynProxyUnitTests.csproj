@@ -9,10 +9,5 @@
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
     <ProjectReference Include="..\..\src\DynProxy\DynProxy.csproj" />
-    <Content Include="CreateProxyUnitTests.cs" />
-    <Content Include="Resources\MyProxy.cs" />
-    <Content Include="Resources\IMyProxy.cs" />
-    <Content Include="Resources\IGenericProxy.cs" />
-    <Content Include="Resources\GenericProxy.cs" />
   </ItemGroup>
 </Project>

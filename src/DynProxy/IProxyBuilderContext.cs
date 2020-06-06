@@ -3,10 +3,13 @@ namespace DynProxy
     using System;
     using FluentIL;
 
+    /// <summary>
+    /// Defines the proxy builder context.
+    /// </summary>
     public interface IProxyBuilderContext
     {
         /// <summary>
-        ///  Gets the <see cref="ITypeBuilder"/>
+        ///  Gets the <see cref="ITypeBuilder"/>.
         /// </summary>
         ITypeBuilder TypeBuilder { get; }
 
@@ -16,7 +19,7 @@ namespace DynProxy
         Type BaseType { get; }
 
         /// <summary>
-        /// Gets the <see cref="FieldBuilder"/> which will contain the base object instance.
+        /// Gets the <see cref="IFieldBuilder"/> which will contain the base object instance.
         /// </summary>
         IFieldBuilder BaseObjectField { get; }
     }

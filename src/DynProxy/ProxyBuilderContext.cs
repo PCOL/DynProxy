@@ -41,9 +41,7 @@ namespace DynProxy
         /// <param name="typeBuilder">The <see cref="TypeBuilder"/> being use to create the type.</param>
         /// <param name="newType">The new type being built.</param>
         /// <param name="baseType">The base type being built on.</param>
-        /// <param name="currentDependencyScope">The current dependency injection scope</param>
         /// <param name="baseObjectField">The <see cref="FieldBuilder"/> that holds the base type instance.</param>
-        /// <param name="dependencyResolverField">The <see cref="FieldBuilder"/> that holds the <see cref="IServiceProvider"/> instance.</param>
         /// <param name="ctorBuilder">The <see cref="ConstructorBuilder"/> for the types constructor.</param>
         public ProxyBuilderContext(
             ITypeBuilder typeBuilder,
@@ -82,7 +80,7 @@ namespace DynProxy
         }
 
         /// <summary>
-        ///  Gets the <see cref="ITypeBuilder"/>
+        ///  Gets the <see cref="ITypeBuilder"/>.
         /// </summary>
         public ITypeBuilder TypeBuilder { get; }
 
@@ -118,7 +116,7 @@ namespace DynProxy
         public IConstructorBuilder ConstructorBuilder { get; }
 
         /// <summary>
-        /// Does the type build implement a given interface type
+        /// Does the type build implement a given interface type.
         /// </summary>
         /// <param name="ifaceType">Interface type.</param>
         /// <returns>True if it does; otherwise false.</returns>

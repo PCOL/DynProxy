@@ -25,6 +25,7 @@ SOFTWARE.
 namespace DynProxy
 {
     using System.Reflection;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Defines the proxy.
@@ -38,5 +39,13 @@ namespace DynProxy
         /// <param name="arguments">The methods arguments.</param>
         /// <returns>The return value.</returns>
         object Invoke(MethodInfo methodInfo, object[] arguments);
+
+        /// <summary>
+        /// Invokes the proxies async methods.
+        /// </summary>
+        /// <param name="methodInfo">The method info.</param>
+        /// <param name="arguments">The methods arguments.</param>
+        /// <returns>A task.</returns>
+        Task<object> InvokeAsync(MethodInfo methodInfo, object[] arguments);
     }
 }

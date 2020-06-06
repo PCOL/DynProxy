@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>alpha5</VersionSuffix>
+    <VersionSuffix>alpha6</VersionSuffix>
     <PackageId>DynProxy</PackageId>
     <Authors>pcol</Authors>
     <AssemblyTitle>DynProxy</AssemblyTitle>
@@ -15,20 +15,16 @@
     <DebugType>portable</DebugType>
     <AssemblyName>DynProxy</AssemblyName>
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
+    <CodeAnalysisRuleSet>../../ca.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.4" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
-    <PackageReference Include="Fluent.IL" Version="1.0.0-alpha7" />
-    <Content Include="IProxy.cs" />
-    <Content Include="IProxiedObject.cs" />
-    <Content Include="IProxyTypeGenerator.cs" />
-    <Content Include="Proxy.cs" />
-    <Content Include="ProxyTypeGenerator.cs" />
-    <Content Include="ProxyBuilderContext.cs" />
-    <Content Include="Utility.cs" />
-    <Content Include="ProxyExtensionMethods.cs" />
+    <PackageReference Include="Fluent.IL" Version="1.0.0-alpha10" />
   </ItemGroup>
+
 </Project>

@@ -1,3 +1,27 @@
+/*
+MIT License
+
+Copyright (c) 2020 P Collyer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 namespace DynProxy
 {
     using System;
@@ -15,11 +39,13 @@ namespace DynProxy
         private readonly Dictionary<string, object> properties;
 
         /// <summary>
-        /// Initialises a new instance of the <see cref="InterceptedContext"/> class.
+        /// Initializes a new instance of the <see cref="InterceptedContext"/> class.
         /// </summary>
         /// <param name="memberInfo">The member info.</param>
         /// <param name="arguments">The arguments.</param>
         /// <param name="returnValue">The return value.</param>
+        /// <param name="timeTaken">The amount of time taken.</param>
+        /// <param name="properties">A dictionary of custom properties.</param>
         internal InterceptedContext(
             MemberInfo memberInfo,
             object[] arguments,
@@ -62,6 +88,7 @@ namespace DynProxy
         /// <summary>
         /// Gets custom properties.
         /// </summary>
+        /// <param name="key">A property key.</param>
         public object this[string key]
         {
             get

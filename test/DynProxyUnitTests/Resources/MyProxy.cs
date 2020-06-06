@@ -2,6 +2,7 @@ namespace DynProxyUnitTests.Resources
 {
     using System;
     using System.Reflection;
+    using System.Threading.Tasks;
     using DynProxy;
 
     public class MyProxy
@@ -60,6 +61,11 @@ namespace DynProxyUnitTests.Resources
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc />
+        protected override Task<object> InvokeAsync(MethodInfo methodInfo, object[] arguments)
+        {
+            throw new NotImplementedException();
+        }
 
         private int ProxyAdd(int first, int second)
         {

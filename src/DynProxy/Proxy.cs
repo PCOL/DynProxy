@@ -24,7 +24,9 @@ SOFTWARE.
 
 namespace DynProxy
 {
+    using System;
     using System.Reflection;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Represents an abstract proxy implementation.
@@ -51,6 +53,12 @@ namespace DynProxy
             return this.Invoke(methodInfo, arguments);
         }
 
+        /// <inheritdoc />
+        Task<object> IProxy.InvokeAsync(MethodInfo methodInfo, object[] arguments)
+        {
+            return this.InvokeAsync(methodInfo, arguments);
+        }
+
         /// <summary>
         /// Returns the proxy object.
         /// </summary>
@@ -62,6 +70,10 @@ namespace DynProxy
                 .CreateProxy<T>(this);
         }
 
+        /// <summary>
+        /// Gets the proxy type generator.
+        /// </summary>
+        /// <returns>An <see cref="IProxyTypeGenerator"/>.</returns>
         protected virtual IProxyTypeGenerator GetProxyTypeGenerator()
         {
             return new ProxyTypeGenerator();
@@ -74,5 +86,13 @@ namespace DynProxy
         /// <param name="arguments">The methods arguments.</param>
         /// <returns>The result of the method call.</returns>
         protected abstract object Invoke(MethodInfo methodInfo, object[] arguments);
+
+        /// <summary>
+        /// Called when a method is invoked on the proxy.
+        /// </summary>
+        /// <param name="methodInfo">The method being called.</param>
+        /// <param name="arguments">The methods arguments.</param>
+        /// <returns>The result of the method call.</returns>
+        protected abstract Task<object> InvokeAsync(MethodInfo methodInfo, object[] arguments);
     }
 }

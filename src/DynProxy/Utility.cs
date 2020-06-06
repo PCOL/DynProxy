@@ -55,6 +55,7 @@ namespace DynProxy
         /// <summary>
         /// Checks if a list is null or empty.
         /// </summary>
+        /// <typeparam name="T">The lists type.</typeparam>
         /// <param name="list">The list to check.</param>
         /// <returns>True if it is null or empty; otherwise false.</returns>
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> list)
