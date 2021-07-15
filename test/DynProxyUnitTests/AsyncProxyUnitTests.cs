@@ -16,6 +16,7 @@ namespace DynProxyUnitTests
         }
 
         [TestMethod]
+        [Ignore]
         public async Task AsyncProxy_CallAsyncMethod()
         {
             var proxyObj = new AsyncProxy();
@@ -24,6 +25,7 @@ namespace DynProxyUnitTests
             var result = await proxy.GetTokenAsync();
 
             Assert.IsNotNull(result);
+            Assert.AreEqual("TokenAsync", result);
         }
     }
 }

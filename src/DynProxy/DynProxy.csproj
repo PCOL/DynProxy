@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <PackageId>DynProxy</PackageId>
     <Authors>pcol</Authors>
     <AssemblyTitle>DynProxy</AssemblyTitle>
@@ -9,21 +9,25 @@
     <PackageReleaseNotes>Initial release</PackageReleaseNotes>
     <PackageTags>dynamic proxy</PackageTags>
     <PackageProjectUrl>https://github.com/PCOL/DynProxy</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/PCOL/DynProxy/blob/master/LICENSE</PackageLicenseUrl>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>DynProxy</AssemblyName>
-    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <CodeAnalysisRuleSet>../../ca.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath=""/>
+  </ItemGroup>  
+
+  <ItemGroup>
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
-    <PackageReference Include="Fluent.IL" Version="1.0.0-alpha10" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Fluent.IL" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

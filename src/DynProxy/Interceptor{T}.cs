@@ -97,14 +97,14 @@ namespace DynProxy
         /// <inheritdoc />
         public object Invoke(MethodInfo methodInfo, object[] arguments)
         {
-            if (this.methodInterceptorTypes.TryGetValue(methodInfo.GetMetadataToken(), out IEnumerable<Type> interceptorTypes) == false)
+            if (this.methodInterceptorTypes.TryGetValue(methodInfo.MetadataToken, out IEnumerable<Type> interceptorTypes) == false)
             {
                 interceptorTypes = Enumerable.Empty<Type>();
                 var attrs = methodInfo.GetCustomAttributes<InterceptorAttribute>(true);
                 if (attrs.Any() == true)
                 {
                     interceptorTypes = attrs.Select(a => a.InterceptorType);
-                    this.methodInterceptorTypes.Add(methodInfo.GetMetadataToken(), interceptorTypes);
+                    this.methodInterceptorTypes.Add(methodInfo.MetadataToken, interceptorTypes);
                 }
             }
 

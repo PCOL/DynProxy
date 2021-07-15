@@ -10,12 +10,14 @@ namespace DynProxyUnitTests.Resources
     {
         protected override object Invoke(MethodInfo methodInfo, object[] arguments)
         {
-            throw new NotImplementedException();
+            return "Token";
         }
 
-        protected override Task<object> InvokeAsync(MethodInfo methodInfo, object[] arguments)
+        protected override async Task<object> InvokeAsync(MethodInfo methodInfo, object[] arguments)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return "TokenAsync";
         }
     }
 }

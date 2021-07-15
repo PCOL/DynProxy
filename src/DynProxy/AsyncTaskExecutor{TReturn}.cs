@@ -31,7 +31,7 @@ namespace DynProxy
     /// An async proxy method executor.
     /// </summary>
     /// <typeparam name="TReturn">The return type.</typeparam>
-    public struct AsyncTaskExecutor<TReturn>
+    public class AsyncTaskExecutor<TReturn>
     {
         /// <summary>
         /// The proxy to execute the method on.
@@ -65,15 +65,11 @@ namespace DynProxy
         /// Executes the method asynchronously.
         /// </summary>
         /// <returns>The result.</returns>
-        public Task<TReturn> ExecuteAsync()
+        public async Task<TReturn> ExecuteAsync()
         {
-            var task = (Task<object>)this.proxy.InvokeAsync(this.methodInfo, this.arguments);
+            var task = this.proxy.InvokeAsync(this.methodInfo, this.arguments);
+            return await task.AsTask<object, TReturn>();
 
-            return task.ContinueWith(
-                t =>
-                {
-                    return (TReturn)t.Result;
-                });
         }
     }
 }

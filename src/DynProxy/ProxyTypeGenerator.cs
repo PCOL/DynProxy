@@ -1,4 +1,5 @@
-﻿/*
+﻿////#define ASYNCCALL
+/*
 MIT License
 
 Copyright (c) 2018 P Collyer
@@ -395,6 +396,7 @@ namespace DynProxy
 
             methodIL.Nop();
 
+#if ASYNCCALL
             if (methodInfo.ReturnType == typeof(Task) ||
                 (methodInfo.ReturnType.IsGenericType == true && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)))
             {
@@ -408,6 +410,7 @@ namespace DynProxy
                     .DeclareLocal(typeof(Task<>).MakeGenericType(actualReturnType), out ILocal localReturn)
 
 /* class
+*/
                     .LdArg0()
                     .LdFld(context.BaseObjectField)
                     .LdLoc(localMethodInfo)
@@ -418,9 +421,8 @@ namespace DynProxy
                     .LdLoc(localAsyncProxy)
                     .Call(asyncTaskExecutorExecuteAsync)
                     .StLoc(localReturn)
-*/
 
-/* Struct */
+/* Struct
                     .LdLocAS(localAsyncProxy)
                     .LdArg0()
                     .LdFld(context.BaseObjectField)
@@ -430,10 +432,12 @@ namespace DynProxy
                     .LdLocAS(localAsyncProxy)
                     .Call(asyncTaskExecutorExecuteAsync)
                     .StLoc(localReturn)
+*/
 
                     .LdLoc(localReturn);
             }
             else
+#endif
             {
                 // Call the proxy implementations invoke method.
                 methodIL

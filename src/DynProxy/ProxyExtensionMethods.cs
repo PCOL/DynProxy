@@ -26,6 +26,8 @@ namespace DynProxy
 {
     using System;
     using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -206,6 +208,32 @@ namespace DynProxy
             }
 
             return impl;
+        }
+
+        /// <summary>
+        /// Casts the result type of the input task as if it were covariant
+        /// </summary>
+        /// <typeparam name="T">The original result type of the task</typeparam>
+        /// <typeparam name="TResult">The covariant type to return</typeparam>
+        /// <param name="task">The target task to cast</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static async Task<TResult> AsTask<T, TResult>(this Task<T> task)
+            where TResult : T
+        {
+            return (TResult)await task;
+        }
+
+        /// <summary>
+        /// Casts a task
+        /// </summary>
+        /// <param name="task"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <returns></returns>
+        public static async Task<U> Upcast<T, U>(this Task<T> task)
+            where T : U
+        {
+            return (U)await task;
         }
     }
 }
