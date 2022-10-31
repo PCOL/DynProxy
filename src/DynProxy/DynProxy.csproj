@@ -10,7 +10,7 @@
     <PackageTags>dynamic proxy</PackageTags>
     <PackageProjectUrl>https://github.com/PCOL/DynProxy</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>DynProxy</AssemblyName>
     <CodeAnalysisRuleSet>../../ca.ruleset</CodeAnalysisRuleSet>
@@ -25,8 +25,8 @@
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Fluent.IL" Version="1.0.1" />
   </ItemGroup>
 
